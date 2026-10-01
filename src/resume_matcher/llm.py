@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 
 from langchain_ollama import ChatOllama
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 
 load_dotenv()
@@ -17,8 +17,9 @@ APP_ENV = os.getenv(
 
 if APP_ENV == "vercel":
 
-    llm = ChatOpenAI(
-        model="gpt-4.1-nano",
+    llm = ChatGoogleGenerativeAI(
+        model="gemini-2.5-flash-lite",
+        google_api_key=os.getenv("GEMINI_API_KEY"),
         temperature=0
     )
 
