@@ -3,12 +3,9 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from langchain_huggingface import (
-    HuggingFaceEmbeddings,
-    HuggingFaceEndpointEmbeddings
-)
-
 from langchain_chroma import Chroma
+from langchain_ollama import OllamaEmbeddings
+from langchain_huggingface import HuggingFaceEndpointEmbeddings
 
 
 load_dotenv()
@@ -27,10 +24,7 @@ BASE_DIR = Path(
 
 if APP_ENV == "vercel":
 
-    
-    # CLOUD EMBEDDINGS
-    
-
+    # Hugging Face hosted embeddings
     embeddings = HuggingFaceEndpointEmbeddings(
         model=(
             "sentence-transformers/"
@@ -38,14 +32,11 @@ if APP_ENV == "vercel":
         ),
         task="feature-extraction",
         huggingfacehub_api_token=os.getenv(
-            "HUGGINGFACEHUB_API_TOKEN"
+            "HF_TOKEN"
         )
     )
 
-   
-    # CHROMA CLOUD
-   
-
+    # Chroma Cloud
     vectorstore = Chroma(
         collection_name="resume_collection",
         embedding_function=embeddings,
@@ -62,28 +53,19 @@ if APP_ENV == "vercel":
 
 else:
 
-    
-    # LOCAL EMBEDDINGS
-   
-
-    embeddings = HuggingFaceEmbeddings(
-        model_name=(
-            "sentence-transformers/"
-            "all-MiniLM-L6-v2"
-        ),
-        encode_kwargs={
-            "normalize_embeddings": True
-        }
+    # Local Ollama embeddings
+    embeddings = OllamaEmbeddings(
+        model=os.getenv(
+            "OLLAMA_EMBEDDING_MODEL",
+            "nomic-embed-text"
+        )
     )
 
-    
-    # LOCAL CHROMA
-    
-
+    # Local Chroma
     DB_PATH = BASE_DIR / "vector_db"
 
     vectorstore = Chroma(
-        collection_name="resume_collection",
+        collection_name="resume_collection_768",
         persist_directory=str(
             DB_PATH
         ),

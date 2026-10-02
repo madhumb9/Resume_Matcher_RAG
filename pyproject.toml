@@ -17,10 +17,8 @@ dependencies = [
     "langchain-google-genai>=4.4.0",
     "langchain-huggingface>=1.2.2",
     "langchain-ollama>=1.1.0",
-    "langchain-openai>=1.6.7",
     "pypdf>=6.19.0",
     "python-dotenv>=1.2.4",
-    "sentence-transformers>=6.1.0",
 ]
 
 [build-system]
@@ -28,6 +26,4 @@ requires = ["uv_build>=0.12.3,<0.13.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
-dev = [
-    "pytest>=9.1.1",
-]
+dev = []
