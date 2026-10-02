@@ -4,17 +4,16 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from langchain_chroma import Chroma
-from langchain_ollama import OllamaEmbeddings
 from langchain_huggingface import HuggingFaceEndpointEmbeddings
 
 
 load_dotenv()
 
 
-APP_ENV = os.getenv(
-    "APP_ENV",
-    "local"
-)
+APP_ENV = os.getenv("APP_ENV", "local")
+
+if os.getenv("VERCEL") == "1":
+    APP_ENV = "vercel"
 
 
 BASE_DIR = Path(
@@ -54,6 +53,8 @@ if APP_ENV == "vercel":
 else:
 
     # Local Ollama embeddings
+    from langchain_ollama import OllamaEmbeddings
+
     embeddings = OllamaEmbeddings(
         model=os.getenv(
             "OLLAMA_EMBEDDING_MODEL",

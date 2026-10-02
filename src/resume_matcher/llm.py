@@ -2,17 +2,16 @@ import os
 
 from dotenv import load_dotenv
 
-from langchain_ollama import ChatOllama
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 
 load_dotenv()
 
 
-APP_ENV = os.getenv(
-    "APP_ENV",
-    "local"
-)
+APP_ENV = os.getenv("APP_ENV", "local")
+
+if os.getenv("VERCEL") == "1":
+    APP_ENV = "vercel"
 
 
 if APP_ENV == "vercel":
@@ -24,6 +23,8 @@ if APP_ENV == "vercel":
     )
 
 else:
+
+    from langchain_ollama import ChatOllama
 
     llm = ChatOllama(
         model=os.getenv(

@@ -1,8 +1,5 @@
-from langchain_community.document_loaders import (
-    PyPDFLoader
-)
-
 from langchain_core.documents import Document
+from pypdf import PdfReader
 
 from .embeddings import vectorstore
 from .utils import (
@@ -19,15 +16,11 @@ def load_resume(
     into one resume Document.
     """
 
-    loader = PyPDFLoader(
-        file_path
-    )
-
-    pages = loader.load()
+    reader = PdfReader(file_path)
 
     full_text = "\n\n".join(
-        page.page_content
-        for page in pages
+        (page.extract_text(extraction_mode="plain") or "").strip()
+        for page in reader.pages
     )
 
     if not full_text.strip():
