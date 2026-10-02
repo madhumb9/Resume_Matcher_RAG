@@ -90,11 +90,19 @@ VERCEL_PAGE = """<!doctype html>
       button.disabled = true;
       try {
         const response = await fetch(url, options);
-        const payload = await response.json();
+        const responseText = await response.text();
+        let payload;
+        try {
+          payload = JSON.parse(responseText);
+        } catch {
+          throw new Error(responseText.trim().slice(0, 240) || `Request failed (${response.status}).`);
+        }
         if (!response.ok) throw new Error(payload.detail || "Request failed.");
         onSuccess(payload);
+        return true;
       } catch (error) {
         uploadStatus.textContent = error.message;
+        return false;
       } finally {
         button.disabled = false;
       }
@@ -105,10 +113,38 @@ VERCEL_PAGE = """<!doctype html>
         uploadStatus.textContent = "Please upload at least one PDF resume.";
         return;
       }
-      const formData = new FormData();
-      for (const file of uploadInput.files) formData.append("files", file);
-      sendRequest("/upload", { method: "POST", body: formData }, uploadForm.querySelector("button"),
-        (payload) => { uploadStatus.innerHTML = payload.html; });
+      const maxBatchBytes = 4 * 1024 * 1024;
+      const batches = [];
+      let currentBatch = [];
+      let currentBatchBytes = 0;
+
+      for (const file of uploadInput.files) {
+        if (file.size > maxBatchBytes) {
+          uploadStatus.textContent = `${file.name} is larger than 4 MB. Upload a smaller PDF.`;
+          return;
+        }
+        if (currentBatchBytes + file.size > maxBatchBytes && currentBatch.length) {
+          batches.push(currentBatch);
+          currentBatch = [];
+          currentBatchBytes = 0;
+        }
+        currentBatch.push(file);
+        currentBatchBytes += file.size;
+      }
+      if (currentBatch.length) batches.push(currentBatch);
+
+      for (let index = 0; index < batches.length; index++) {
+        const formData = new FormData();
+        for (const file of batches[index]) formData.append("files", file);
+        uploadStatus.textContent = `Uploading batch ${index + 1} of ${batches.length}...`;
+        const succeeded = await sendRequest(
+          "/upload",
+          { method: "POST", body: formData },
+          uploadForm.querySelector("button"),
+          (payload) => { uploadStatus.innerHTML = payload.html; }
+        );
+        if (!succeeded) return;
+      }
     });
     matchForm.addEventListener("submit", (event) => {
       event.preventDefault();
