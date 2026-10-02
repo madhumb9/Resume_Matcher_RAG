@@ -1,6 +1,9 @@
+import os
 import sys
 from pathlib import Path
 
+
+os.environ["APP_ENV"] = "vercel"
 
 ROOT_DIR = Path(
     __file__
