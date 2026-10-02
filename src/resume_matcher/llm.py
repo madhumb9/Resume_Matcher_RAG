@@ -17,7 +17,7 @@ if os.getenv("VERCEL") == "1":
 if APP_ENV == "vercel":
 
     llm = ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash-lite",
+        model="gemini-3.5-flash-lite",
         google_api_key=os.getenv("GEMINI_API_KEY"),
         temperature=0
     )
