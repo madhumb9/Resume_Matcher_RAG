@@ -107,7 +107,7 @@ VERCEL_PAGE = """<!doctype html>
         button.disabled = false;
       }
     }
-    uploadForm.addEventListener("submit", (event) => {
+    uploadForm.addEventListener("submit", async (event) => {
       event.preventDefault();
       if (!uploadInput.files.length) {
         uploadStatus.textContent = "Please upload at least one PDF resume.";
