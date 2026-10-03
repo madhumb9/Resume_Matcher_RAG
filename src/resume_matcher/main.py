@@ -1,9 +1,10 @@
+import logging
 import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import HTMLResponse
 from markdown_it import MarkdownIt
 from pydantic import BaseModel
@@ -21,6 +22,7 @@ from .llm import analyze_resumes
 from .retrieval import build_context, retrieve_resumes
 
 markdown = MarkdownIt("commonmark", {"html": False})
+logger = logging.getLogger(__name__)
 
 VERCEL_PAGE = """<!doctype html>
 <html lang="en">
@@ -245,7 +247,15 @@ async def upload_resumes(
 
 @app.post("/match")
 def match_endpoint(request: MatchRequest):
-    result = match_resumes(request.job_description)
+    try:
+        result = match_resumes(request.job_description)
+    except Exception as exc:
+        logger.exception("Resume matching failed")
+        raise HTTPException(
+            status_code=500,
+            detail="Resume matching failed. Check the Vercel function logs for details."
+        ) from exc
+
     return {"html": render_markdown(result)}
 
 
