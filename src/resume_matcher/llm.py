@@ -87,4 +87,27 @@ def analyze_resumes(
         prompt
     )
 
-    return response.content
+    content = response.content
+    if isinstance(content, str):
+        return content
+
+    if isinstance(content, list):
+        text_parts = []
+        for block in content:
+            if isinstance(block, str):
+                text_parts.append(block)
+            elif (
+                isinstance(block, dict)
+                and isinstance(block.get("text"), str)
+                and not (
+                    isinstance(block.get("extras"), dict)
+                    and block["extras"].get("thought")
+                )
+            ):
+                text_parts.append(block["text"])
+
+        text = "\n".join(part for part in text_parts if part.strip())
+        if text:
+            return text
+
+    raise ValueError("The language model returned no text content.")
